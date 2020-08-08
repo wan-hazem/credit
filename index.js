@@ -35,195 +35,135 @@ const developers = "740700552593145876"
 
 ////////
 
-client.on("message", message => {
-
-            if (message.content.startsWith(prefix + "obc")) {
-                         if (!message.member.hasPermission("ADMINISTRATOR"))  return;
-  let args = message.content.split(" ").slice(1);
-  var argresult = args.join(' '); 
-  message.guild.members.filter(m => m.presence.status !== 'offline').forEach(m => {
- m.send(`${argresult}\n ${m}`);
+let vipKeys = JSON.parse(fs.readFileSync("./vipKeys.json", "utf8"));
+client.on("message", msg=>{
+let id = "348586830305689600"; // ايديك
+let role = "VIP"; // اسم رتبة الفيب
+let Price = 10; // السعر
+let Price2 = Math.floor(Price-(Price*(5/100)));
+if(!Price || Price < 1) return;
+let cmd = msg.content.split(' ')[0];
+if(cmd === `${prefix}buy`){
+if(msg.author.bot) return;
+if(!msg.channel.guild) return;
+let embedvip = new Discord.RichEmbed()
+.setColor("#42f4f4")
+.setAuthor(msg.author.username, msg.author.displayAvatarURL)
+.setThumbnail(msg.author.avatarURL)
+.setTitle("**اختر الطريقة المناسبة لك**")
+.addField("ل شراء الفي اي بي لنفسك","🔱",true )
+.addField("ل شراء الفي اي بي ك هدية","🎁",true)
+.setTimestamp()
+.setFooter(client.user.username,client.user.displayAvatarURL);
+msg.channel.send(embedvip).then(msgs2 =>{
+msgs2.react("🔱").then(()=>{
+  msgs2.react("🎁").then(()=>{
+    const me = (reaction, user) => reaction.emoji.name === '🔱' && user.id === msg.author.id;
+    const gift = (reaction, user) => reaction.emoji.name === '🎁' && user.id === msg.author.id;
+    const mec = msgs2.createReactionCollector(me, {time: 120000});
+    const giftc = msgs2.createReactionCollector(gift, {time: 120000});
+mec.on("collect", r=>{  
+msgs2.delete()
+if(msg.member.roles.find(r=>r.name == role)) return msg.reply("انت تمتلك الرتبة مسبقًا");
+let roleW = msg.guild.roles.find(r=>r.name == role);
+if(!roleW) return msg.reply(`البوت مقفل لعدم وجود رتبة ب أسم \`${role}\``)
+msg.channel.send(`كردت بروبوت\`${Price}\` لديك 4 دقائق لتحويل
+إلى ${msg.guild.members.get(id)}
+`).then( msgs =>{
+const filter = response => response.author.id == "282859044593598464" && response.mentions._content.includes(`:moneybag: | ${msg.author.username}, has transferred \`$${Price2}\` to ${msg.guild.members.get(id)}`);
+msg.channel.awaitMessages(filter, { maxMatches: 1, time: 240000, errors: ['time'] })
+.then( collected =>{
+msgs.delete()
+msg.reply(`تم اعطائك رتبة \`${role}\``);
+msg.member.addRole(roleW);
+}).catch(e => {});
+})})
+giftc.on("collect", r=>{
+  msgs2.delete()
+  let roleW = msg.guild.roles.find(r=>r.name == role);
+  if(!roleW) return msg.reply(`البوت مقفل لعدم وجود رتبة ب أسم \`${role}\``)
+msg.channel.send(`كردت بروبوت\`${Price}\` لديك 4 دقائق لتحويل
+إلى ${msg.guild.members.get(id)}
+`).then( msgs =>{
+  const filter = response => response.author.id == "282859044593598464" && response.mentions._content.includes(`:moneybag: | ${msg.author.username}, has transferred \`$${Price2}\` to ${msg.guild.members.get(id)}`);
+  msg.channel.awaitMessages(filter, { maxMatches: 1, time: 240000, errors: ['time'] })
+  .then( collected =>{
+  msgs.delete()
+  genKey(msg,roleW);
+  }).catch(e => {});
+  })
 })
- message.channel.send(`\`${message.guild.members.filter(m => m.presence.status !== 'online').size}\` : عدد الاعضاء المستلمين`); 
- message.delete(); 
-};     
-});
-
-client.on("message", message => {
-            if (message.content.startsWith(prefix + "bc")) {
-                         if (!message.member.hasPermission("ADMINISTRATOR"))  return;
-  let args = message.content.split(" ").slice(1);
-  var argresult = args.join(' '); 
-  message.guild.members.filter(m => m.presence.status !== 'all').forEach(m => { 
- m.send(`${argresult}\n ${m}`);
-})
- message.channel.send(`\`${message.guild.members.filter(m => m.presence.status !== 'all').size}\` : عدد الاعضاء المستلمين`); 
- message.delete(); 
-};     
-});
-
-
-client.on('message', message => {
-    if (message.author.bot) return;
-     if (message.content === prefix + "help") {
-     message.channel.send('**تم ارسال الاومر في الخاص**')
-
- message.author.sendMessage(`
- **
-
-╔[❖════════════❖]╗
-                      Commands
-╚[❖════════════❖]╝
-
-
-[❖═════════════════════════════❖]
-
- ❖ ${prefix}bc <message> ➾ Message All Members In Server
-
- ❖ ${prefix}obc <message> ➾ Message To Online Members
-
- ❖ ${prefix}ebc <message>  ➾ Embed Broadcast
-
- ❖ ${prefix}rbc <message> ➾ Message To Who Have Role
-
-
- ❖ ${prefix}bot ➾ Info Bot
-
-
- ❖ ${prefix}ping ➾ Test My Ping
-
-
- 
-**
-
-
-`);
-
+})})})
+///
+}
+if(cmd === `${prefix}used`){
+  let args = msg.content.split(" ").slice(1)[0];
+  if(!args) {   
+    let embed = new Discord.RichEmbed()
+    .setColor("#42f4f4")
+    .setTitle(`:x: - **الرجاء ادخال كود الهدية** \`${prefix}used <Key>\``)
+    msg.reply(embed).then( z => z.delete(3000));
+    return
+}
+  let embed = new Discord.RichEmbed()
+.setTitle(`**جاري التحقق من الكود**`)
+.setColor("#42f4f4")
+  msg.reply(embed).then( msgs =>{
+  if(vipKeys[args]){
+    let hav = msg.member.roles.find(`name`, vipKeys[args].name);
+    if(hav){
+    let embed = new Discord.RichEmbed()
+    .setTitle(`:x: - **انت تمتلك هذه الرتبة مسبقًا**  \`${vipKeys[args].name}\``)
+    .setColor("#42f4f4")
+    msgs.edit(embed)
+    return
     }
-});
-
-client.on('message', message => {
-  if(!message.channel.guild) return;
-if (message.content.startsWith(prefix + "ping")) {
-if(!message.channel.guild) return;
-var msg = `${Date.now() - message.createdTimestamp}`
-var api = `${Math.round(client.ping)}`
-if (message.author.bot) return;
-let embed = new Discord.RichEmbed()
-.setAuthor(message.author.username,message.author.avatarURL)
-.setColor('RANDOM')
-.addField('**Time Taken:**',msg + " ms 📶 ")
-.addField('**Discord API:**',api + " ms 📶 ")
-message.channel.send({embed:embed});
+    let embed = new Discord.RichEmbed()
+    .setTitle(`:tada: - **مبروك تم اعطائك رتبة** \`${vipKeys[args].name}\``)
+    .setColor("#42f4f4")
+    msgs.edit(embed)
+    msg.member.addRole(vipKeys[args]);
+    delete vipKeys[args]
+    save()
+  }else{
+    let embed = new Discord.RichEmbed()
+    .setTitle(`:x: - **الكود غير صيحيح أو انه مستعمل من قبل**`)
+    .setColor("#42f4f4")
+    msgs.edit(embed)
+  }});
 }
 });
 
-client.on('message', message => { 
-    if (message.content.startsWith(prefix + "bot")) { 
-    message.channel.send({ //جميع حقوق البوت محفوضة لدى بترولي
-        embed: new Discord.RichEmbed() 
-            .setAuthor(client.user.username,client.user.avatarURL) 
-            .setThumbnail(client.user.avatarURL) 
-            .setColor('RANDOM') 
-            .setTitle('Info TheJokar Bots.') 
-            .addField('**My Ping**' , [`${Date.now() - message.createdTimestamp}` + 'MS'], true) 
-            .addField('**RAM Usage**', `[${(process.memoryUsage().rss / 1048576).toFixed()}MB]`, true) 
-            .addField('**Servers**', [client.guilds.size], true) 
-            .addField('**Channels**' , `[ ${client.channels.size} ]` , true) 
-            .addField('**Users**' ,`[ ${client.users.size} ]` , true) 
-            .addField('**My Name**' , `[ ${client.user.tag} ]` , true) 
-            .addField('**My ID**' , `[ ${client.user.id} ]` , true) 
-            .addField('**DiscordJS**' , `[ ${Discord.version} ]` , true) 
-            .addField('**NodeJS**' , `[ ${process.version} ]` , true) 
-            .addField('**Arch**' , `[ ${process.arch} ]` , true) 
-            .addField('**Platform**' , `[ ${process.platform} ]` , true) 
-                  .addField('**My Prefix**' , `[ ${prefix} ]` , true) 
-                  .addField('**My Language**' , `[ Java Script ]` , true)
-                  .setFooter('${client.user.tag}') 
-    }) 
-} 
-}); 
+function genKey(msg,role){
+  var randomkeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var gift = "";
+  for (var y = 0; y < 16; y++) {   ///16
+    gift +=  `${randomkeys.charAt(Math.floor(Math.random() * randomkeys.length))}`;
+  }
+  vipKeys[gift] = role;
+  let embed = new Discord.RichEmbed()
+  .setColor("#42f4f4")
+  .setTitle(`:ok_hand: - **تم ارسآل الكود على الخاص**`);
+  msg.reply(embed);
+  let embed2= new Discord.RichEmbed()
+  .setAuthor(msg.author.username, msg.author.displayAvatarURL)
+  .setThumbnail(msg.author.avatarURL)
+  .addField("**Key Of Gift**", gift,true)
+  .addField("Role",vipKeys[gift].name,true)
+  .addField("This Key Made by", msg.author, true)
+  .addField("The Room", msg.channel , true)
+  .setTimestamp()
+  .setFooter(client.user.username,client.user.displayAvatarURL)  
+  msg.author.send(embed2);
+  save()
+}
 
+function save(){
+  fs.writeFile("./vipKeys.json", JSON.stringify(vipKeys), (err) => {
+    if (err) console.log(err)
+  });
 
-
-client.on('message' , message => {
-      if(message.author.bot) return;
-     
-      if(message.content.startsWith(prefix + "rbc")) {
-        if (!message.member.hasPermission("ADMINISTRATOR"))  return;
-        let args = message.content.split(" ").slice(2);
-     var codes = args.join(' ')
-       
-        if(!codes) {
-          message.channel.send("Try - help")
-            return;
-        }
-     
-     
-              var role = message.mentions.roles.first();
-                if(!role) {
-                  message.reply("I CAnot Find TheRole")
-                    return;
-                }
-            message.guild.members.filter(m => m.roles.get(role.id)).forEach(n => {
-              n.send(
-              "**" + "السيرفر :" + "\n" +
-              `${message.guild.name}` + "\n" +
-              "المرسل :" + "\n" +
-              `${message.author.tag}` + "\n" +
-              "الرسالة :" + "\n" +
-              `${codes}` + "**"
-              )
-            })
-            message.channel.send(`لقد تم ارسال هذه الرسالة الى ${message.guild.members.filter(m => m.roles.get(role.id)).size} عضو`)
-        }
-    });
-	
-	
-	
-	
-    client.on('message', message => {
-              if(!message.channel.guild) return;
-    if(message.content.startsWith(prefix + 'ebc')) {
-    if(!message.channel.guild) return message.channel.send('**This Command Only For Servers**').then(m => m.delete(5000));
-  if(!message.member.hasPermission('ADMINISTRATOR')) return      message.channel.send('**You Dont Have perms** `ADMINISTRATOR`' );
-    let args = message.content.split(" ").join(" ").slice(2 + prefix.length);
-    let copy = "Speed Bot";
-    let request = `Requested By ${message.author.username}`;
-    if (!args) return message.reply('**Write Some Things To Broadcast**');message.channel.send(`**Are You Sure \nThe Broadcast: ** \` ${args}\``).then(msg => {
-    msg.react('✅')
-    .then(() => msg.react('❌'))
-    .then(() =>msg.react('✅'))
-    
-    let reaction1Filter = (reaction, user) => reaction.emoji.name === '✅' && user.id === message.author.id;
-    let reaction2Filter = (reaction, user) => reaction.emoji.name === '❌' && user.id === message.author.id;
-    
-    let reaction1 = msg.createReactionCollector(reaction1Filter, { time: 12000 });
-    let reaction2 = msg.createReactionCollector(reaction2Filter, { time: 12000 });
- reaction1.on("collect", r => {
-    message.channel.send(`**☑ | Done ... The Broadcast Message Has Been Sent To __${message.guild.members.size}__ Members**`).then(m => m.delete(5000));
-    message.guild.members.forEach(m => {
-  
-  var bc = new
-       Discord.RichEmbed()
-       .setColor('RANDOM')
-       .setTitle('Broadcast')
-       .addField('Server', message.guild.name)
-       .addField('Sender', message.author.username)
-       .addField('Message', args)
-       .setThumbnail(message.author.avatarURL)
-       .setFooter(copy, client.user.avatarURL);
-    m.send({ embed: bc })
-    msg.delete();
-    })
-    })
-    reaction2.on("collect", r => {
-    message.channel.send(`**Broadcast Canceled.**`).then(m => m.delete(5000));
-    msg.delete();
-    })
-    })
-    }
-    });
+}
 
 
 client.login("");
